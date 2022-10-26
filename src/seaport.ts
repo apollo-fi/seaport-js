@@ -6,7 +6,11 @@ import {
   PayableOverrides,
   providers,
 } from "ethers";
-import { formatBytes32String, _TypedDataEncoder } from "ethers/lib/utils";
+import {
+  formatBytes32String,
+  _TypedDataEncoder,
+  recoverAddress,
+} from "ethers/lib/utils";
 import { SeaportABI } from "./abi/Seaport";
 import {
   SEAPORT_CONTRACT_NAME,
@@ -366,6 +370,30 @@ export class Seaport {
         EIP_712_ORDER_TYPE,
         orderComponents
       )
+    );
+  }
+
+  public async verifySignature(
+    orderParameters: OrderParameters,
+    counter: number,
+    signature: string
+  ) {
+    const domainData = await this._getDomainData();
+
+    const orderComponents: OrderComponents = {
+      ...orderParameters,
+      counter,
+    };
+
+    const digest = _TypedDataEncoder.hash(
+      domainData,
+      EIP_712_ORDER_TYPE,
+      orderComponents
+    );
+
+    return (
+      recoverAddress(Buffer.from(digest.slice(2), "hex"), signature) ==
+      orderParameters.offerer
     );
   }
 

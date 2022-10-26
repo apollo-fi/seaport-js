@@ -79,6 +79,13 @@ describeWithFixture("As a user I want to sign an order", (fixture) => {
       .connect(randomSigner)
       .callStatic.validate([order]);
 
+    const isValid2 = await seaport.verifySignature(
+      orderParameters,
+      counter.toNumber(),
+      signature
+    );
+    expect(isValid2).to.be.true;
+
     expect(isValid).to.be.true;
   });
 });
